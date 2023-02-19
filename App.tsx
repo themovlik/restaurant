@@ -1,10 +1,17 @@
 import {NavigationContainer} from '@react-navigation/native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {Provider as ReduxProvider} from 'react-redux';
 import Router from './src/navigation/router';
+import store from './store';
 
 const App = () => {
   return (
     <NavigationContainer>
-      <Router />
+      <SafeAreaProvider>
+        <ReduxProvider store={store}>
+          <Router />
+        </ReduxProvider>
+      </SafeAreaProvider>
     </NavigationContainer>
   );
 };
