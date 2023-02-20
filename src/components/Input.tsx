@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: scale(8),
     fontSize: scale(16),
+    color: COLORS.gray,
   },
   error: {
     fontFamily: 'Poppins-Regular',

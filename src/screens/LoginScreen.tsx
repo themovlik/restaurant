@@ -67,7 +67,7 @@ const LoginScreen: React.FC<Props> = ({navigation}) => {
     };
     if (isValid.email && isValid.password) {
       console.log('Login successful');
-      navigation.navigate('MainScreen');
+      navigation.replace('MainScreen');
       setAsyncStorageItem(USERINFO, email);
       setLoginState({
         email: '',
@@ -128,6 +128,7 @@ const styles = StyleSheet.create({
     fontSize: scale(24),
     fontWeight: 'bold',
     marginBottom: verticalScale(32),
+    color: COLORS.gray,
   },
   button: {
     backgroundColor: COLORS.lightGreen,

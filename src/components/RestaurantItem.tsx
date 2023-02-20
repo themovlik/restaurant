@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: scale(14),
     marginBottom: verticalScale(8),
+    color: COLORS.gray,
   },
   locationContainer: {
     height: verticalScale(40),

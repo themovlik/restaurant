@@ -5,7 +5,7 @@ import {scale} from '../utils/responsive';
 
 interface Props {
   title: string;
-  isLogOut: boolean;
+  isLogOut?: boolean;
   onBackPress?: () => void;
 }
 
