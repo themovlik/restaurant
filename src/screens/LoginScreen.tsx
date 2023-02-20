@@ -1,17 +1,12 @@
 import React, {useState, useEffect, memo} from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {scale, verticalScale} from '../utils/responsive';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {COLORS} from '../constant/theme';
 import Input from '../components/Input';
 import {getAsyncStorageItem, setAsyncStorageItem} from '../utils/localStorage';
 import {USERINFO} from '../constant/storageKeys';
+import Loader from '../components/Loader';
 
 interface LoginState {
   email: string;
@@ -94,7 +89,7 @@ const LoginScreen: React.FC<Props> = ({navigation}) => {
   return (
     <View style={styles.container}>
       {loginState.loading ? (
-        <ActivityIndicator color={COLORS.lightGreen} size="large" />
+        <Loader />
       ) : (
         <>
           <Text style={styles.title}>Login</Text>

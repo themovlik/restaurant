@@ -1,7 +1,13 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { ImageSourcePropType } from "react-native/types";
 import * as restaurantsList from './restaurantsList';
 export type Restaurants = {
-    name: string;
+    id: string;
+    title: string;
+    image: ImageSourcePropType;
+    latitude: number;
+    longitude: number;
+    rating: number;
 }
 
 export type RestaurantsListState = {
@@ -9,6 +15,8 @@ export type RestaurantsListState = {
     loading: boolean;
     error: boolean;
     errorMessage: string;
+    status?: string;
+    nextPage?: number;
 }
 
 const initialState: RestaurantsListState = {
@@ -16,9 +24,11 @@ const initialState: RestaurantsListState = {
     loading: false,
     error: false,
     errorMessage: '',
+    status: undefined,
+    nextPage: undefined,
 }
 
-export const fetchRestaurants = createAsyncThunk<{restaurants: Restaurants[]}>(
+export const fetchRestaurants = createAsyncThunk<{restaurants: Restaurants[], nextPage: number}>(
     'fetchRestaurants',
     async () => {
         const response = await restaurantsList.fetchRestaurants();
@@ -49,10 +59,14 @@ const restaurantsListSlice = createSlice({
         .addCase(fetchRestaurants.fulfilled, (state, action) => {
             state.restaurants = action.payload.restaurants;
             state.loading = false;
+            state.status = 'fulfilled';
+            state.nextPage = (state.nextPage || 0) + 1;
         })
         .addCase(fetchRestaurants.rejected, (state) => {
             state.error = true;
             state.loading = false;
+            state.status = 'rejected';
+            state.nextPage = undefined;
         })
     },
 })

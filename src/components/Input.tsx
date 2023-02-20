@@ -1,5 +1,11 @@
 import React, {memo} from 'react';
-import {View, Text, TextInput, StyleSheet} from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  KeyboardTypeOptions,
+} from 'react-native';
 import {COLORS} from '../constant/theme';
 import {scale, verticalScale} from '../utils/responsive';
 
@@ -7,8 +13,8 @@ interface Props {
   placeholder?: string;
   secureTextEntry?: boolean;
   value?: string;
-  keyboardType?: string;
-  errorMessage?: string;
+  keyboardType?: KeyboardTypeOptions;
+  errorMessage?: string | null;
   onChangeText?: (text: string) => void;
 }
 
