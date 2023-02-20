@@ -1,4 +1,4 @@
-import {StyleSheet, SafeAreaView, View, Text, Image} from 'react-native';
+import {StyleSheet, SafeAreaView} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import MapView, {
@@ -15,6 +15,7 @@ import {COLORS} from '../constant/theme';
 import UserLocation from '../components/UserLocation';
 import DestinationIcon from '../assets/icons/shop-pin.png';
 import ShopMarker from '../components/ShopMarker';
+import LoaderModal from '../components/LoaderModal';
 
 type RootStackParamList = {
   RouteScreen: undefined;
@@ -35,35 +36,72 @@ type LatLng = {
   longitude: number;
 };
 
+const decodePolyline = (encoded: string) => {
+  const poly = [];
+  let index = 0,
+    lat = 0,
+    lng = 0;
+
+  while (index < encoded.length) {
+    let b,
+      shift = 0,
+      result = 0;
+
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+
+    const dlat = (result & 1) != 0 ? ~(result >> 1) : result >> 1;
+    lat += dlat;
+
+    shift = 0;
+    result = 0;
+
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+
+    const dlng = (result & 1) != 0 ? ~(result >> 1) : result >> 1;
+    lng += dlng;
+
+    poly.push({latitude: lat / 1e5, longitude: lng / 1e5});
+  }
+
+  return poly;
+};
+
 const RouteScreen: React.FC<Props> = ({navigation, route}) => {
-  const {restaurant} = route.params;
+  const restaurant = route.params?.restaurant;
   const [initialRegion, setInitialRegion] = useState<LatLng | undefined>({
-    latitude: 0,
-    longitude: 0,
-    latitudeDelta: 0.015,
-    longitudeDelta: 0.0121,
+    latitude: 23.033863,
+    longitude: 72.585022,
+    latitudeDelta: 6,
+    longitudeDelta: 6,
   });
-  const [userLocation, setUserLocation] = useState<LatLng | undefined>({
-    latitude: 0,
-    longitude: 0,
-  });
-  const [destination, setDestination] = useState<LatLng | undefined>({
-    latitude: 0,
-    longitude: 0,
-  });
+  const [userLocation, setUserLocation] = useState<LatLng | undefined>(
+    undefined,
+  );
+  const [destination, setDestination] = useState<LatLng | undefined>(undefined);
   const [directions, setDirections] = useState<LatLng[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const mapViewRef = useRef<MapView | null>(null);
 
   useEffect(() => {
-    console.log(restaurant.latitude, restaurant.longitude);
-    setDestination({
-      latitude: restaurant.latitude,
-      longitude: restaurant.longitude,
-    });
     Geolocation.getCurrentPosition(
       ({coords}) => {
         const {latitude, longitude} = coords;
-        setUserLocation({latitude, longitude});
+        setUserLocation({
+          latitude: parseFloat(latitude),
+          longitude: parseFloat(longitude),
+        });
+        setDestination({
+          latitude: parseFloat(restaurant.latitude),
+          longitude: parseFloat(restaurant.longitude),
+        });
         setInitialRegion({
           latitude,
           longitude,
@@ -81,6 +119,7 @@ const RouteScreen: React.FC<Props> = ({navigation, route}) => {
   }, [userLocation, destination]);
 
   const fetchDirections = async () => {
+    setLoading(true);
     if (userLocation && destination) {
       const origin = `${userLocation.latitude},${userLocation.longitude}`;
       const dest = `${destination.latitude},${destination.longitude}`;
@@ -89,12 +128,12 @@ const RouteScreen: React.FC<Props> = ({navigation, route}) => {
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
+        setLoading(false);
 
         if (data.status === 'OK') {
           const points = data.routes[0].overview_polyline.points;
           const decodedPoints = decodePolyline(points);
           setDirections(decodedPoints);
-
           // Zoom the map to the route
           const coordinates = decodedPoints.map(point => ({
             latitude: point.latitude,
@@ -108,47 +147,10 @@ const RouteScreen: React.FC<Props> = ({navigation, route}) => {
           mapViewRef.current?.fitToCoordinates(coordinates, options);
         }
       } catch (error) {
+        setLoading(false);
         console.log(error);
       }
     }
-  };
-
-  const decodePolyline = (encoded: string) => {
-    const poly = [];
-    let index = 0,
-      lat = 0,
-      lng = 0;
-
-    while (index < encoded.length) {
-      let b,
-        shift = 0,
-        result = 0;
-
-      do {
-        b = encoded.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-
-      const dlat = (result & 1) != 0 ? ~(result >> 1) : result >> 1;
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-
-      do {
-        b = encoded.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-
-      const dlng = (result & 1) != 0 ? ~(result >> 1) : result >> 1;
-      lng += dlng;
-
-      poly.push({latitude: lat / 1e5, longitude: lng / 1e5});
-    }
-
-    return poly;
   };
 
   return (
@@ -172,17 +174,17 @@ const RouteScreen: React.FC<Props> = ({navigation, route}) => {
           }
         }>
         {userLocation && (
-          <Marker
-            coordinate={userLocation}
-            title={'My Location'}
-            children={<UserLocation size={40} />}
-          />
+          <Marker coordinate={userLocation} title={'My Location'}>
+            <UserLocation size={40} />
+          </Marker>
         )}
-        <Marker coordinate={destination} icon={DestinationIcon}>
-          <Callout tooltip>
-            <ShopMarker title={restaurant?.title} rating={restaurant?.rating} />
-          </Callout>
-        </Marker>
+        {destination && (
+          <Marker coordinate={destination} icon={DestinationIcon}>
+            <Callout>
+              <ShopMarker title={restaurant.title} rating={restaurant.rating} />
+            </Callout>
+          </Marker>
+        )}
         {directions.length > 0 && (
           <Polyline
             coordinates={directions}
@@ -191,6 +193,7 @@ const RouteScreen: React.FC<Props> = ({navigation, route}) => {
           />
         )}
       </MapView>
+      <LoaderModal visible={loading} text="Loading..." />
     </SafeAreaView>
   );
 };
