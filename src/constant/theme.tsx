@@ -6,7 +6,8 @@ export const COLORS = {
   lightGreen: '#25db94',
   black: '#000000',
   gray: '#25282f',
-  lightgray: '#676870',
+  lightgray: '#CCCCCC',
+  red: '#FF0000',
 };
 
 export const SIZES = {
@@ -45,7 +46,7 @@ export const FONTS = {
     lineHeight: 20,
   },
   inputs: {
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: 'Poppins-Regular',
     fontSize: SIZES.inputs,
     lineHeight: 20,
   },
