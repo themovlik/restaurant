@@ -43,7 +43,7 @@ const LoginScreen: React.FC<Props> = ({navigation}) => {
     const fetchCredentials = async () => {
       const storedEmail = await getAsyncStorageItem(USERINFO);
       if (storedEmail) {
-        navigation.navigate('MainScreen');
+        navigation.replace('MainScreen');
       } else {
         setLoginState({...loginState, loading: false});
       }

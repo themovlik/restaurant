@@ -1,4 +1,4 @@
-import {StyleSheet, View, SafeAreaView, StatusBar} from 'react-native';
+import {SafeAreaView, ScrollView} from 'react-native';
 import React from 'react';
 import Header from '../components/Header';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -38,5 +38,3 @@ const MainScreen: React.FC<Props> = ({navigation}) => {
 };
 
 export default MainScreen;
-
-const styles = StyleSheet.create({});
